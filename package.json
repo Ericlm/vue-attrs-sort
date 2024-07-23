@@ -27,7 +27,8 @@
     "test:svelte": "svelte-check",
     "test:types": "tsc --noEmit --pretty",
     "test:unit": "vitest --run --coverage",
-    "test": "pnpm run /^test:/"
+    "test": "pnpm run /^test:/",
+    "test:vue": "vitest sort-vue-attributes.test.ts"
   },
   "engines": {
     "node": "^18.0.0 || >=20.0.0"

@@ -28,8 +28,8 @@ type Group<T extends string[]> =
 type Options<T extends string[]> = [
   Partial<{
     customGroups: { [key in T[number]]: string[] | string }
+    groups: (Group<T>[] | Group<T>)[] | 'recommended'
     type: 'alphabetical' | 'line-length' | 'natural'
-    groups: (Group<T>[] | Group<T>)[]
     order: 'desc' | 'asc'
     ignoreCase: boolean
   }>,
@@ -65,20 +65,28 @@ export default createEslintRule<Options<string[]>, MESSAGE_ID>({
           },
           groups: {
             description: 'Specifies the order of the groups.',
-            type: 'array',
-            items: {
-              oneOf: [
-                {
-                  type: 'string',
+            oneOf: [
+              {
+                type: 'array',
+                items: {
+                  oneOf: [
+                    {
+                      type: 'string',
+                    },
+                    {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                  ],
                 },
-                {
-                  type: 'array',
-                  items: {
-                    type: 'string',
-                  },
-                },
-              ],
-            },
+              },
+              {
+                type: 'string',
+                enum: ['recommended'],
+              }
+            ]
           },
           customGroups: {
             description: 'Specifies custom groups.',
@@ -155,9 +163,7 @@ export default createEslintRule<Options<string[]>, MESSAGE_ID>({
 
               let name: string
 
-              let { getGroup, defineGroup, setCustomGroups } = useGroups(
-                options.groups,
-              )
+              let { getGroup, defineGroup, setCustomGroups, defineVueGroups } = useGroups(options.groups)
 
               if (
                 typeof attribute.key.name === 'string' &&
@@ -168,14 +174,18 @@ export default createEslintRule<Options<string[]>, MESSAGE_ID>({
                 name = sourceCode.text.slice(...attribute.key.range)
               }
 
-              setCustomGroups(options.customGroups, name)
-
-              if (attribute.value === null) {
-                defineGroup('shorthand')
-              }
-
-              if (attribute.loc.start.line !== attribute.loc.end.line) {
-                defineGroup('multiline')
+              if(options.groups !== 'recommended') {
+                setCustomGroups(options.customGroups, name)
+                
+                if (attribute.value === null) {
+                  defineGroup('shorthand')
+                }
+                
+                if (attribute.loc.start.line !== attribute.loc.end.line) {
+                  defineGroup('multiline')
+                }
+              } else {
+                defineVueGroups()
               }
 
               accumulator.at(-1)!.push({

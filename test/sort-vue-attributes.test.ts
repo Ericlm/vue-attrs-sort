@@ -222,6 +222,36 @@ describe(ruleName, () => {
               },
             ],
           },
+          {
+            filename: 'component.vue',
+            code: dedent`
+              <script lang="ts" setup>
+                import { useRef } from 'vue'
+
+                import Component from '../Component.vue'
+
+                let eF = useRef(false)
+                let g = true
+              </script>
+
+              <template>
+                <component
+                  b="bb"
+                  c="c"
+                  e-f
+                  @a="() => {
+                    g.value = false
+                  }"
+                ></component>
+              </template>
+            `,
+            options: [
+              {
+                ...options,
+                groups: 'recommended',
+              },
+            ],
+          },
         ],
         invalid: [
           {
